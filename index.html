@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shutters | Retrabajos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+        <p style="margin-top: 16px; font-weight: 500; color: var(--text-secondary);">Procesando...</p>
+    </div>
+
+    <div id="screen-login" class="screen" style="justify-content: center; align-items: center; text-align: center; background-color: var(--bg-color);">
+        
+        <img src="https://raw.githubusercontent.com/fb-ilm/hdms.github.io/refs/heads/main/src/logo/logohdms.png" alt="Logotipo Corporativo" style="width: 180px; height: auto; margin-bottom: 32px; border-radius: 4px;">
+        
+        <h1 style="font-size: 24px; margin-bottom: 8px; color: var(--text-primary);">Control de Calidad</h1>
+        <p class="subtitle" style="margin-bottom: 40px; font-size: 16px;">Sistema de captura de retrabajos</p>
+        
+        <div style="width: 100%; max-width: 340px; background: var(--card-bg); padding: 32px 24px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); box-sizing: border-box;">
+            
+            <label for="input-login" style="display: block; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                Identificación de Operador
+            </label>
+            
+            <input type="text" id="input-login" placeholder="Ej. 012345A" maxlength="7" autocomplete="off" style="margin-bottom: 24px; background-color: #f8f8f9; border: 1px solid #e5e5ea; width: 100%; padding: 16px; border-radius: 14px; font-size: 17px; box-sizing: border-box; outline: none; text-transform: uppercase;">
+            
+            <button class="btn" onclick="processLogin()" style="margin-bottom: 0; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);">
+                Ingresar
+            </button>
+        </div>
+        
+        <p style="margin-top: 32px; font-size: 12px; color: var(--text-secondary);">
+            © 2026 Desarrollado por Javier Bonilla | Hunter Douglas Management System
+        </p>
+    </div>
+
+    <div id="screen-scan-ticket" class="screen">
+        <h1>Escanea una pieza</h1>
+        <p class="subtitle" id="user-greeting">Escanea el código del ticket.</p>
+        <input type="text" id="input-ticket" placeholder="Escanea ticket aquí..." autocomplete="off">
+        <button class="btn" onclick="processTicket()">Buscar pieza</button>
+        <button class="btn btn-secondary" onclick="logout()" style="margin-top: auto;">Cerrar Sesión</button>
+    </div>
+
+    <div id="screen-decision" class="screen">
+        <h1>Estado de la Pieza</h1>
+        <p class="subtitle">Ticket: <span id="lbl-ticket" style="font-weight: 600; color: var(--text-primary);"></span></p>
+        <button class="btn btn-success" onclick="processOK()">OK (Sin defectos)</button>
+        <button class="btn btn-danger" onclick="showScreen('screen-component')">Hallazgo</button>
+        <button class="btn btn-secondary" onclick="resetApp()" style="margin-top: auto;">Cancelar</button>
+    </div>
+
+    <div id="screen-component" class="screen">
+        <h1>Componente</h1>
+        <p class="subtitle">Selecciona el componente con falla</p>
+        <div class="grid-buttons" id="components-list"></div>
+        <button class="btn btn-secondary" onclick="resetApp()" style="margin-top: auto;">Cancelar</button>
+    </div>
+
+    <div id="screen-quantity" class="screen">
+        <h1>Cantidad</h1>
+        <p class="subtitle">Ingresa la cantidad de Louvers</p>
+        <input type="number" id="input-quantity" placeholder="Ej. 2" min="1">
+        <button class="btn" onclick="saveQuantity()">Siguiente</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-component')" style="margin-top: auto;">Atrás</button>
+    </div>
+
+    <div id="screen-mechanism-type" class="screen">
+        <h1>Tipo de Mecanismo</h1>
+        <button class="btn btn-secondary" onclick="saveMechanism('Gear')">Gear</button>
+        <button class="btn btn-secondary" onclick="saveMechanism('Till')">Till</button>
+        <button class="btn btn-secondary" onclick="saveMechanism('CV')">CV</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-component')" style="margin-top: auto;">Atrás</button>
+    </div>
+
+    <div id="screen-problem" class="screen">
+        <h1>Tipo de Problema</h1>
+        <div id="problems-list" class="scrollable-list"></div>
+        <button class="btn btn-secondary" onclick="resetApp()">Cancelar</button>
+    </div>
+
+    <div id="screen-rework-dest" class="screen">
+        <h1>Acción de Hallazgo</h1>
+        <button class="btn" onclick="showScreen('screen-rework-action')">Retrabajo en estación</button>
+        <button class="btn btn-secondary" onclick="processSendToReworkQueue()">Se envió a retrabajo</button>
+    </div>
+
+    <div id="screen-rework-action" class="screen">
+        <h1>Acción Realizada</h1>
+        <div id="rework-actions-list" class="scrollable-list"></div>
+    </div>
+
+    <div id="screen-fail-reason" class="screen">
+        <h1>¿Por qué no quedó?</h1>
+        <p class="subtitle">Selecciona la razón</p>
+        <div id="fail-reasons-list" class="scrollable-list"></div>
+    </div>
+
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
