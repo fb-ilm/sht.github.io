@@ -9,6 +9,24 @@
 <body>
 
 <div class="app-container">
+
+    <div id="screen-scan-ticket" class="screen">
+        <h1>Escanea una pieza</h1>
+        <p class="subtitle" id="user-greeting">Escanea el código del ticket.</p>
+
+        <!-- PANEL DE ESTADÍSTICAS POR HORA -->
+        <div id="stats-container" class="stats-card">
+            <div class="stats-header">
+                <span>Piezas del día:</span>
+                <strong id="total-today-count">0</strong>
+            </div>
+            <div id="hourly-grid" class="hourly-grid"></div>
+        </div>
+
+        <input type="text" id="input-ticket" placeholder="Escanea ticket aquí..." autocomplete="off">
+        <button class="btn" onclick="processTicket()">Buscar pieza</button>
+        <button class="btn btn-secondary" onclick="logout()" style="margin-top: auto;">Cerrar Sesión</button>
+    </div>
     
     <div id="loader" class="loader-overlay">
         <div class="spinner"></div>
@@ -41,6 +59,7 @@
     </div>
 
     <div id="screen-scan-ticket" class="screen">
+        
         <h1>Escanea una pieza</h1>
         <p class="subtitle" id="user-greeting">Escanea el código del ticket.</p>
         <input type="text" id="input-ticket" placeholder="Escanea ticket aquí..." autocomplete="off">
