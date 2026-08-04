@@ -161,3 +161,65 @@ input:focus {
     margin-bottom: 20px;
     padding-bottom: 20px;
 }
+
+/* --- TARJETA DE ESTADÍSTICAS DE HOY --- */
+.stats-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--btn-gray);
+}
+
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.stats-header strong {
+    font-size: 18px;
+    color: var(--accent-blue);
+}
+
+.hourly-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.hourly-item {
+    background: #f8f8f9;
+    border: 1px solid #e5e5ea;
+    border-radius: 8px;
+    padding: 6px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hourly-item.active {
+    background: #eef6ff;
+    border-color: var(--accent-blue);
+}
+
+.hour-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.hour-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.hourly-item.active .hour-count {
+    color: var(--accent-blue);
+}
+
+
