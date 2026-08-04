@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function processTicket() {
     const ticketId = document.getElementById('input-ticket').value.trim();
-    if (!ticketId) return alert("Escanea el ticket.");
+    // if (!ticketId) return alert("Escanea el ticket."); //
 
     appState.shopFloorId = ticketId;
     document.getElementById('lbl-ticket').innerText = ticketId;
