@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbzWd0y8TgKkdwE3II7xZtw5gBCvhFViFEyqlPNZ7YkdP6Xx7nLHIjTzRhOE_yyFbrdsFw/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbymtuLdniyZkyS-BjI-8cviRrSwf5t-k0WPhZwSm5u5lzlI-MUX2ly4LWAaMO_BXPisPg/exec'; 
 
 const COMPONENTS = ['Louver', 'Jamb', 'Rail', 'Mecanismo', 'Interlock', 'Lightblock', 'Flex', 'Divider', 'Tier Louver'];
 
@@ -111,30 +111,75 @@ function toggleLoader(show) {
     document.getElementById('loader').classList.toggle('active', show);
 }
 
-// --- FLUJOS DE NEGOCIO ---
-function processLogin() {
-    // Obtenemos el valor, quitamos espacios y forzamos mayúsculas (para la 'A')
-    const empId = document.getElementById('input-login').value.trim().toUpperCase();
+// Cargar estadísticas del empleado
+async function loadEmployeeStats() {
+    if (!appState.employeeId) return;
     
-    // Expresión Regular: Empieza con '0' (^0), seguido de 5 dígitos (\d{5}), termina con 'A' (A$)
+    try {
+        const res = await fetch(`${API_URL}?action=getStats&employeeId=${encodeURIComponent(appState.employeeId)}`);
+        const data = await res.json();
+        
+        if (data.totalToday !== undefined) {
+            document.getElementById('total-today-count').innerText = data.totalToday;
+            renderHourlyStats(data.hourlyCounts);
+        }
+    } catch (e) {
+        console.error("Error al obtener estadísticas del operador", e);
+    }
+}
+
+function renderHourlyStats(hourlyData) {
+    const grid = document.getElementById('hourly-grid');
+    grid.innerHTML = '';
+
+    for (const [block, count] of Object.entries(hourlyData)) {
+        const item = document.createElement('div');
+        item.className = `hourly-item ${count > 0 ? 'active' : ''}`;
+        
+        // Formato simplificado de hora (ej. 07:00)
+        const hourLabel = block.split(' - ')[0];
+        
+        item.innerHTML = `
+            <span class="hour-label">${hourLabel}</span>
+            <span class="hour-count">${count}</span>
+        `;
+        grid.appendChild(item);
+    }
+}
+
+// --- FLUJOS DE NEGOCIO ---
+// Actualizamos processLogin para cargar las estadísticas al ingresar
+function processLogin() {
+    const empId = document.getElementById('input-login').value.trim().toUpperCase();
     const regexFormat = /^0\d{5}A$/;
 
-    if (!empId) {
-        return alert("Escanea o ingresa tu gafete.");
-    }
-    
+    if (!empId) return alert("Escanea o ingresa tu gafete.");
     if (!regexFormat.test(empId)) {
-        // Limpia el input para que lo vuelva a intentar si falló el escáner
         document.getElementById('input-login').value = ''; 
-        return alert("Formato inválido. El gafete debe iniciar con '0', seguido de 5 números y terminar con 'A' (Ej. 012345A).");
+        return alert("Formato inválido. El gafete debe iniciar con '0', seguido de 5 números y terminar con 'A'.");
     }
     
     appState.employeeId = empId;
     localStorage.setItem('employeeId', empId);
     document.getElementById('user-greeting').innerText = `Empleado: ${appState.employeeId}`;
     document.getElementById('input-login').value = '';
+    
+    loadEmployeeStats();
     showScreen('screen-scan-ticket');
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderDynamicLists();
+    setupScannerListeners();
+    
+    if (appState.employeeId) {
+        document.getElementById('user-greeting').innerText = `Empleado: ${appState.employeeId}`;
+        loadEmployeeStats();
+        showScreen('screen-scan-ticket');
+    } else {
+        showScreen('screen-login');
+    }
+});
 
 async function processTicket() {
     const ticketId = document.getElementById('input-ticket').value.trim();
