@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbymtuLdniyZkyS-BjI-8cviRrSwf5t-k0WPhZwSm5u5lzlI-MUX2ly4LWAaMO_BXPisPg/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbxz-EQS1n3rhs86wdFMLaDIjRd9Hg3CC2iaWwSk9MmrI6gpEwFhtzfkp6bxUkbhyZl_ug/exec'; 
 
 const COMPONENTS = ['Louver', 'Jamb', 'Rail', 'Mecanismo', 'Interlock', 'Lightblock', 'Flex', 'Divider', 'Tier Louver'];
 
