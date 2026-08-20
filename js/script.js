@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxz-EQS1n3rhs86wdFMLaDIjRd9Hg3CC2iaWwSk9MmrI6gpEwFhtzfkp6bxUkbhyZl_ug/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbzkAfec7NAf5vC7GV7xMSKEwxbaViIoMCoXKDuaDULZeOZ-bR0wlmipSsPGGRwYdbgx4w/exec'; 
 
 const COMPONENTS = ['Louver', 'Jamb', 'Rail', 'Mecanismo', 'Interlock', 'Lightblock', 'Flex', 'Divider', 'Tier Louver'];
 
@@ -33,25 +33,23 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (appState.employeeId) {
         document.getElementById('user-greeting').innerText = `Empleado: ${appState.employeeId}`;
+        loadEmployeeStats();
         showScreen('screen-scan-ticket');
     } else {
         showScreen('screen-login');
     }
 });
 
-// --- MANEJO DEL ESCÁNER FÍSICO (EVENTO ENTER) ---
+// --- MANEJO DEL ESCÁNER FÍSICO (ENTER) ---
 function setupScannerListeners() {
-    // Escucha el Enter en el input de login
     document.getElementById('input-login').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') processLogin();
     });
 
-    // Escucha el Enter en el input de ticket
     document.getElementById('input-ticket').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') processTicket();
     });
 
-    // Escucha el Enter en el input de cantidad
     document.getElementById('input-quantity').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') saveQuantity();
     });
@@ -60,6 +58,7 @@ function setupScannerListeners() {
 // --- RENDERIZADO DINÁMICO ---
 function renderDynamicLists() {
     const compDiv = document.getElementById('components-list');
+    compDiv.innerHTML = '';
     COMPONENTS.forEach(comp => {
         let btn = document.createElement('button');
         btn.className = 'btn btn-secondary';
@@ -69,6 +68,7 @@ function renderDynamicLists() {
     });
 
     const rewDiv = document.getElementById('rework-actions-list');
+    rewDiv.innerHTML = '';
     REWORK_ACTIONS.forEach(act => {
         let btn = document.createElement('button');
         btn.className = 'btn btn-secondary';
@@ -94,15 +94,13 @@ function renderDynamicLists() {
 // --- CONTROL DE PANTALLAS ---
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
+    const target = document.getElementById(screenId);
+    if (target) target.classList.add('active');
     
-    // Auto-enfoque para escáner
     setTimeout(() => {
         if (screenId === 'screen-login') document.getElementById('input-login').focus();
         if (screenId === 'screen-scan-ticket') document.getElementById('input-ticket').focus();
         if (screenId === 'screen-quantity') document.getElementById('input-quantity').focus();
-        
-        // Renderizar las razones de fallo dinámicamente si entramos a esa pantalla
         if (screenId === 'screen-fail-reason') renderFailReasons();
     }, 100);
 }
@@ -124,19 +122,19 @@ async function loadEmployeeStats() {
             renderHourlyStats(data.hourlyCounts);
         }
     } catch (e) {
-        console.error("Error al obtener estadísticas del operador", e);
+        console.error("Error al obtener estadísticas", e);
     }
 }
 
 function renderHourlyStats(hourlyData) {
     const grid = document.getElementById('hourly-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     for (const [block, count] of Object.entries(hourlyData)) {
         const item = document.createElement('div');
         item.className = `hourly-item ${count > 0 ? 'active' : ''}`;
         
-        // Formato simplificado de hora (ej. 07:00)
         const hourLabel = block.split(' - ')[0];
         
         item.innerHTML = `
@@ -148,7 +146,6 @@ function renderHourlyStats(hourlyData) {
 }
 
 // --- FLUJOS DE NEGOCIO ---
-// Actualizamos processLogin para cargar las estadísticas al ingresar
 function processLogin() {
     const empId = document.getElementById('input-login').value.trim().toUpperCase();
     const regexFormat = /^0\d{5}A$/;
@@ -168,42 +165,32 @@ function processLogin() {
     showScreen('screen-scan-ticket');
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    renderDynamicLists();
-    setupScannerListeners();
-    
-    if (appState.employeeId) {
-        document.getElementById('user-greeting').innerText = `Empleado: ${appState.employeeId}`;
-        loadEmployeeStats();
-        showScreen('screen-scan-ticket');
-    } else {
-        showScreen('screen-login');
-    }
-});
-
 async function processTicket() {
-    const ticketId = document.getElementById('input-ticket').value.trim();
-    // if (!ticketId) return alert("Escanea el ticket."); //
+    const inputElem = document.getElementById('input-ticket');
+    const ticketId = inputElem.value.trim();
+
     if (!ticketId) {
-        alert("Por favor, ingresa o escanea el código del ticket.");
+        alert("Por favor, escanea o ingresa el ticket.");
         inputElem.focus();
         return;
     }
 
     appState.shopFloorId = ticketId;
     document.getElementById('lbl-ticket').innerText = ticketId;
-    document.getElementById('input-ticket').value = '';
+    inputElem.value = '';
     toggleLoader(true);
 
     try {
-        const response = await fetch(`${API_URL}?shopFloorId=${(ticketId)}`);
+        const response = await fetch(`${API_URL}?shopFloorId=${encodeURIComponent(ticketId)}`);
         const data = await response.json();
         toggleLoader(false);
 
         if (data.exists && data.status === 'En cola') {
             appState.isReworkCycle = true;
-            // Si viene de BD, intentamos recuperar el componente del backend para las razones de fallo
-            if(data.component) appState.component = data.component;
+            if (data.component) appState.component = data.component;
+            if (data.quantity) appState.quantity = data.quantity;
+            if (data.mechanismType) appState.mechanismType = data.mechanismType;
+            if (data.problemType) appState.problemType = data.problemType;
             showScreen('screen-rework-action');
         } else {
             appState.isReworkCycle = false;
@@ -211,12 +198,13 @@ async function processTicket() {
         }
     } catch (error) {
         toggleLoader(false);
-        alert("Error de conexión. ¿Configuraste correctamente la URL del Apps Script?");
+        console.error("Error al consultar ticket:", error);
+        alert("Error de conexión al consultar el ticket.");
         resetApp();
     }
 }
 
-// --- SELECCIÓN DE DATOS ---
+// --- SELECCIÓN DE DEFECTO ---
 function selectComponent(comp) {
     appState.component = comp;
     if (comp === 'Louver') showScreen('screen-quantity');
@@ -245,7 +233,7 @@ function saveMechanism(type) {
 function renderProblemsList(component) {
     const container = document.getElementById('problems-list');
     container.innerHTML = '';
-    if(PROBLEMS[component]) {
+    if (PROBLEMS[component]) {
         PROBLEMS[component].forEach(prob => {
             let btn = document.createElement('button');
             btn.className = 'btn btn-secondary';
@@ -264,7 +252,6 @@ function renderFailReasons() {
     const container = document.getElementById('fail-reasons-list');
     container.innerHTML = '';
     
-    // Carga los problemas del componente actual, si no hay asume genéricos
     const reasons = (appState.component && PROBLEMS[appState.component]) 
         ? PROBLEMS[appState.component] 
         : ['Sigue igual', 'Nuevo daño', 'Mal retrabajo', 'Falta material'];
@@ -275,7 +262,11 @@ function renderFailReasons() {
         btn.style.marginBottom = '8px';
         btn.innerText = reason;
         btn.onclick = () => {
-            sendData({ status: 'En cola', failReason: reason, incrementCounter: true });
+            sendData({ 
+                status: 'En cola', 
+                failReason: reason, 
+                incrementCounter: true 
+            });
         };
         container.appendChild(btn);
     });
@@ -289,6 +280,12 @@ function renderFailReasons() {
 
 // --- ENVÍO DE DATOS A APPS SCRIPT ---
 async function sendData(payloadExtension) {
+    if (!appState.shopFloorId) {
+        alert("Error: No se ha detectado el ticket.");
+        resetApp();
+        return;
+    }
+
     toggleLoader(true);
     const payload = {
         employeeId: appState.employeeId,
@@ -301,22 +298,34 @@ async function sendData(payloadExtension) {
     };
 
     try {
-        await fetch(API_URL, {
+        const res = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
         });
+        const result = await res.json();
         toggleLoader(false);
-        resetApp();
+
+        if (result.success) {
+            resetApp();
+        } else {
+            alert("Error al guardar: " + (result.error || "desconocido"));
+        }
     } catch (error) {
         toggleLoader(false);
-        alert("Error al guardar los datos.");
+        console.error("Error al enviar datos:", error);
+        alert("Error de conexión al guardar los datos.");
     }
 }
 
 // --- ACCIONES FINALES ---
-function processOK() { sendData({ status: 'OK' }); }
-function processSendToReworkQueue() { sendData({ status: 'En cola' }); }
+function processOK() { 
+    sendData({ status: 'OK' }); 
+}
+
+function processSendToReworkQueue() { 
+    sendData({ status: 'En cola' }); 
+}
 
 function processReworkAction(actionText) {
     sendData({
@@ -335,7 +344,10 @@ function resetApp() {
     appState.problemType = null;
     appState.isReworkCycle = false;
     
-    document.getElementById('input-ticket').value = '';
+    const input = document.getElementById('input-ticket');
+    if (input) input.value = '';
+    
+    loadEmployeeStats();
     showScreen('screen-scan-ticket');
 }
 
