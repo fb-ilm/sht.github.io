@@ -184,6 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
 async function processTicket() {
     const ticketId = document.getElementById('input-ticket').value.trim();
     // if (!ticketId) return alert("Escanea el ticket."); //
+    if (!ticketId) {
+        alert("Por favor, ingresa o escanea el código del ticket.");
+        inputElem.focus();
+        return;
+    }
 
     appState.shopFloorId = ticketId;
     document.getElementById('lbl-ticket').innerText = ticketId;
@@ -191,7 +196,7 @@ async function processTicket() {
     toggleLoader(true);
 
     try {
-        const response = await fetch(`${API_URL}?shopFloorId=${encodeURIComponent(ticketId)}`);
+        const response = await fetch(`${API_URL}?shopFloorId=${(ticketId)}`);
         const data = await response.json();
         toggleLoader(false);
 
